@@ -1,4 +1,4 @@
-# Hearth Games Client
+# Hearth Games Client [![Build Status](https://travis-ci.org/emilic/hearthgamesclient.svg?branch=master)](https://travis-ci.org/emilic/hearthgamesclient)
 
 The Official Hearth Games Uploader.  This is a Java program that reads Hearthstone log files and uploads them to HearthGames.com
 
