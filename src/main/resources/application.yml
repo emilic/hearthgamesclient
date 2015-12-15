@@ -1,0 +1,8 @@
+spring:
+  jackson:
+    serialization-inclusion: non-null
+
+application:
+  os-name: ${os.name}
+  user-home: ${user.home}
+  upload-url: http://hearthgames.com/clientUpload

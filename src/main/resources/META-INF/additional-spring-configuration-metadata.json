@@ -1,0 +1,25 @@
+{
+  "groups": [
+    {
+      "name": "application",
+      "type": "com.hearthgames.client.config.ApplicationProperties",
+      "sourceType": "com.hearthgames.client.config.ApplicationProperties"
+    }
+  ], "properties": [
+    {
+      "name": "application.os-name",
+      "type": "java.lang.String",
+      "description": "Name of the OS such as Windows or Mac."
+    },
+    {
+      "name": "application.user-home",
+      "type": "java.lang.String",
+      "description": "The users home directory."
+    },
+    {
+      "name": "application.upload-url",
+      "type": "java.lang.String",
+      "description": "The URL to upload completed games."
+    }
+  ]
+}
