@@ -9,6 +9,8 @@ import com.hearthgames.client.match.event.RetryGameRecordedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -84,7 +86,10 @@ public class HearthGamesClient {
         }
         ResponseEntity<RecordGameResponse> response = null;
         try {
-            response = restTemplate.postForEntity(this.properties.getUploadUrl(), request, RecordGameResponse.class);
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("User-Agent", "HearthGamesClient");
+            HttpEntity<RecordGameRequest> entity = new HttpEntity<>(request, headers);
+            response = restTemplate.postForEntity(this.properties.getUploadUrl(), entity, RecordGameResponse.class);
         } catch (Exception e) {
             logger.info("Not able to save game to HearthGames.com at this time.");
             logger.info(e.getMessage());
