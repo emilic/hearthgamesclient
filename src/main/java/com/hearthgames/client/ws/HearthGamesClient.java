@@ -1,11 +1,11 @@
 package com.hearthgames.client.ws;
 
-import com.hearthgames.client.match.GameRecorder;
-import com.hearthgames.client.match.event.SaveGameLocallyEvent;
+import com.hearthgames.client.game.GameRecorder;
+import com.hearthgames.client.game.event.SaveGameLocallyEvent;
 import com.hearthgames.client.config.ApplicationProperties;
-import com.hearthgames.client.match.GameData;
-import com.hearthgames.client.match.event.GameRecordedEvent;
-import com.hearthgames.client.match.event.RetryGameRecordedEvent;
+import com.hearthgames.client.game.GameData;
+import com.hearthgames.client.game.event.GameRecordedEvent;
+import com.hearthgames.client.game.event.RetryGameRecordedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,9 +14,11 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.File;
+import java.net.ConnectException;
 
 @Component
 public class HearthGamesClient {
@@ -37,7 +39,7 @@ public class HearthGamesClient {
     }
 
     public void handleGameRecorded(GameRecordedEvent event) {
-        recordMatch(event.getData());
+        recordGame(event.getData());
     }
 
     public void handleRetryGameRecorded(RetryGameRecordedEvent event) {
@@ -54,47 +56,52 @@ public class HearthGamesClient {
     }
 
     private void retryRecordGame(GameData gameData, File file) {
-        ResponseEntity<RecordGameResponse> response = postMatchToServer(createRequestFromData(gameData));
-        if (response != null && response.getStatusCode() == HttpStatus.OK) {
-            logger.info("Game recorded and available for viewing at: " + response.getBody().getUrl());
-            deleteFile(file);
-        } else if (response != null && response.getStatusCode() == HttpStatus.NOT_ACCEPTABLE) {
-            logger.info("The game type is not recordable. Some how a non-play mode game was uploaded.");
-        } else if (response == null) {
-            logger.info("Will try to save again on restart of the client.");
-        }
-    }
-
-    private void recordMatch(GameData gameData) {
-        ResponseEntity<RecordGameResponse> response = postMatchToServer(createRequestFromData(gameData));
-        if (response != null && response.getStatusCode() == HttpStatus.OK) {
-            logger.info("Game recorded: " + response.getBody().getUrl());
-        } else if (response != null && response.getStatusCode() == HttpStatus.NOT_ACCEPTABLE) {
-            logger.info("The game type is not recordable. Somehow a non-play mode game was uploaded.");
-        } else if (response == null){
-            logger.info("Attempting to save match to local cache for later upload, on restart of the client.");
-            gameRecorder.handleData(new SaveGameLocallyEvent(this, gameData));
-        }
-    }
-
-    private ResponseEntity<RecordGameResponse> postMatchToServer(RecordGameRequest request) {
-        if (request.getRank() == null) {
-            logger.info("Posting Non-Ranked Play Mode match to the server...");
-        } else {
-            logger.info("Posting Ranked Play Mode match to the server");
-            logger.info("Rank detected : " + request.getRank());
-        }
-        ResponseEntity<RecordGameResponse> response = null;
         try {
-            HttpHeaders headers = new HttpHeaders();
-            headers.set("User-Agent", "HearthGamesClient");
-            HttpEntity<RecordGameRequest> entity = new HttpEntity<>(request, headers);
-            response = restTemplate.postForEntity(this.properties.getUploadUrl(), entity, RecordGameResponse.class);
-        } catch (Exception e) {
-            logger.info("Not able to save game to HearthGames.com at this time.");
+            ResponseEntity<RecordGameResponse> response = postGameToServer(createRequestFromData(gameData));
+            if (response.getStatusCode() == HttpStatus.OK) {
+                logger.info("Game recorded: " + response.getBody().getUrl());
+                deleteFile(file);
+            }
+        } catch (RestClientException e) {
+            if (e.getCause() instanceof ConnectException) {
+                logger.info("Not able to save game to HearthGames.com at this time because the server is offline.");
+            } else {
+                logger.info("Server returned error and will not process game. If a valid game was uploaded it will be queued for analysis and reprocessing on the server.");
+            }
             logger.info(e.getMessage());
         }
-        return response;
+    }
+
+    private void recordGame(GameData gameData) {
+        try {
+            ResponseEntity<RecordGameResponse> response = postGameToServer(createRequestFromData(gameData));
+            if (response.getStatusCode() == HttpStatus.OK) {
+                logger.info("Game recorded: " + response.getBody().getUrl());
+            }
+        } catch (RestClientException e) {
+            if (e.getCause() instanceof ConnectException) {
+                logger.info("Not able to save game to HearthGames.com at this time because the server is offline.");
+                logger.info(e.getMessage());
+                logger.info("Attempting to save game to local cache for later upload, on restart of the client.");
+                gameRecorder.handleData(new SaveGameLocallyEvent(this, gameData));
+            } else {
+                logger.info("Server returned error and will not process game. If a valid game was uploaded it will be queued for analysis and reprocessing on the server.");
+            }
+            logger.info(e.getMessage());
+        }
+    }
+
+    private ResponseEntity<RecordGameResponse> postGameToServer(RecordGameRequest request) throws RestClientException {
+        if (request.getRank() == null) {
+            logger.info("Posting Non-Ranked Play Mode game to the server...");
+        } else {
+            logger.info("Posting Ranked Play Mode game to the server");
+            logger.info("Rank detected : " + request.getRank());
+        }
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("User-Agent", "HearthGamesClient");
+        HttpEntity<RecordGameRequest> entity = new HttpEntity<>(request, headers);
+        return restTemplate.postForEntity(this.properties.getUploadUrl(), entity, RecordGameResponse.class);
     }
 
     private void deleteFile(File file) {

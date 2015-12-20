@@ -1,7 +1,7 @@
-package com.hearthgames.client.match;
+package com.hearthgames.client.game;
 
-import com.hearthgames.client.match.event.GameRecordedEvent;
-import com.hearthgames.client.match.event.SaveGameLocallyEvent;
+import com.hearthgames.client.game.event.GameRecordedEvent;
+import com.hearthgames.client.game.event.SaveGameLocallyEvent;
 import com.hearthgames.client.log.event.LineReadEvent;
 import com.hearthgames.client.ws.HearthGamesClient;
 import org.apache.commons.io.FileUtils;
@@ -32,54 +32,54 @@ public class GameRecorder {
     @Autowired
     private HearthGamesClient client;
 
-    private StringBuilder currentMatch;
-    private boolean matchComplete;
+    private StringBuilder currentGame;
+    private boolean gameComplete;
     private Integer rank;
     private long startTime;
     private long endTime;
 
-    private List<GameData> recordedMatches = new ArrayList<>();
+    private List<GameData> recordedGames = new ArrayList<>();
 
     public void handleLine(LineReadEvent event) {
         String line = event.getLine().trim();
         if (line.startsWith(CREATE_GAME)) {
-            matchComplete = false;
+            gameComplete = false;
             rank = null;
             startTime = System.currentTimeMillis();
-            currentMatch = new StringBuilder();
-            currentMatch.append(event.getLine()).append("\n");
-        } else if (currentMatch != null && line.startsWith(GAME_STATE_COMPLETE)) {
-            currentMatch.append(event.getLine()).append("\n");
-            matchComplete = true;
+            currentGame = new StringBuilder();
+            currentGame.append(event.getLine()).append("\n");
+        } else if (currentGame != null && line.startsWith(GAME_STATE_COMPLETE)) {
+            currentGame.append(event.getLine()).append("\n");
+            gameComplete = true;
             endTime = System.currentTimeMillis();
-        } else if (currentMatch != null && matchComplete && line.startsWith(MEDAL_RANKED)) {
+        } else if (currentGame != null && gameComplete && line.startsWith(MEDAL_RANKED)) {
             int rankFound = getRank(line);
             if (rank == null || rankFound < rank) {
                 rank = rankFound;
             }
-        } else if (currentMatch != null && matchComplete && line.startsWith(REGISTER_FRIEND_CHALLENGE)) {
+        } else if (currentGame != null && gameComplete && line.startsWith(REGISTER_FRIEND_CHALLENGE)) {
             GameData gameData = new GameData();
-            gameData.setData(compress(currentMatch.toString()));
+            gameData.setData(compress(currentGame.toString()));
             gameData.setStartTime(startTime);
             gameData.setEndTime(endTime);
-            gameData.setRank(rank+"");
+            gameData.setRank(rank);
 
-            currentMatch = null;
-            if (!hasMatchBeenRecorded(gameData)) {
+            currentGame = null;
+            if (!hasGameBeenRecorded(gameData)) {
                 logger.info("The Game has been recorded. Attempting to record @ HearthGames.com");
-                recordedMatches.add(gameData);
+                recordedGames.add(gameData);
                 client.handleGameRecorded(new GameRecordedEvent(this, gameData));
             }
 
-        } else if (currentMatch != null && event.isLoggable()) {
-            currentMatch.append(event.getLine()).append("\n");
+        } else if (currentGame != null && event.isLoggable()) {
+            currentGame.append(event.getLine()).append("\n");
         }
     }
 
     // This method is needed because of a bug in Tailer that results in the log being re-read from the beginning when
     // hearthstone is exited out. So we have to unfortunately compare previous games data.
-    private boolean hasMatchBeenRecorded(GameData data) {
-        for (GameData md : recordedMatches) {
+    private boolean hasGameBeenRecorded(GameData data) {
+        for (GameData md : recordedGames) {
             if (Arrays.equals(data.getData(), md.getData())) {
                 return true;
             }
@@ -115,11 +115,11 @@ public class GameRecorder {
 
         }
         File file = new File(fileName);
-        logger.info("Saving match to : " + fileName);
+        logger.info("Saving game to : " + fileName);
         try {
             FileUtils.writeByteArrayToFile(file, gameData.getData());
         } catch (IOException e) {
-            logger.error("Error saving match to : " + fileName);
+            logger.error("Error saving game to : " + fileName);
             StringWriter sw = new StringWriter();
             e.printStackTrace(new PrintWriter(sw));
             logger.error(sw.toString());

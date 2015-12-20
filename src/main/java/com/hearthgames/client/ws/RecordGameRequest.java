@@ -6,7 +6,7 @@ public class RecordGameRequest implements Serializable {
     private static final long serialVersionUID = 1;
 
     private byte[] data;
-    private String rank;
+    private Integer rank;
     private long startTime;
     private long endTime;
 
@@ -18,11 +18,11 @@ public class RecordGameRequest implements Serializable {
         this.data = data;
     }
 
-    public String getRank() {
+    public Integer getRank() {
         return rank;
     }
 
-    public void setRank(String rank) {
+    public void setRank(Integer rank) {
         this.rank = rank;
     }
 

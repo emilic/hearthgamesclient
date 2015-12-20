@@ -4,13 +4,12 @@ import com.hearthgames.client.log.filter.BobFilter;
 import com.hearthgames.client.log.filter.PowerFilter;
 import com.hearthgames.client.log.event.LineReadEvent;
 import com.hearthgames.client.log.filter.AssetFilter;
-import com.hearthgames.client.match.GameRecorder;
+import com.hearthgames.client.game.GameRecorder;
 import org.apache.commons.io.input.TailerListenerAdapter;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
 import java.io.PrintWriter;

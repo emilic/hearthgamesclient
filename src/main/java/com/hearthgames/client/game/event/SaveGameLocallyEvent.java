@@ -1,6 +1,6 @@
-package com.hearthgames.client.match.event;
+package com.hearthgames.client.game.event;
 
-import com.hearthgames.client.match.GameData;
+import com.hearthgames.client.game.GameData;
 import org.springframework.context.ApplicationEvent;
 
 public class SaveGameLocallyEvent extends ApplicationEvent {

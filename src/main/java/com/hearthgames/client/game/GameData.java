@@ -1,11 +1,11 @@
-package com.hearthgames.client.match;
+package com.hearthgames.client.game;
 
 public class GameData {
 
     private byte[] data;
     private long startTime;
     private long endTime;
-    private String rank;
+    private Integer rank;
 
     public byte[] getData() {
         return data;
@@ -31,11 +31,11 @@ public class GameData {
         this.endTime = endTime;
     }
 
-    public String getRank() {
+    public Integer getRank() {
         return rank;
     }
 
-    public void setRank(String rank) {
+    public void setRank(Integer rank) {
         this.rank = rank;
     }
 }

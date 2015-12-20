@@ -4,7 +4,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 /**
- * This class attempts to filter hearthstone log lines that provide match events only.
+ * This class attempts to filter hearthstone log lines that provide game events only.
  *
  * Examples:
  *   TAG_CHANGE Entity=[name=Acolyte of Pain id=28 zone=HAND zonePos=7 cardId=EX1_007 player=1] tag=ZONE_POSITION value=6

@@ -1,7 +1,7 @@
 package com.hearthgames.client.log;
 
-import com.hearthgames.client.match.GameData;
-import com.hearthgames.client.match.event.RetryGameRecordedEvent;
+import com.hearthgames.client.game.GameData;
+import com.hearthgames.client.game.event.RetryGameRecordedEvent;
 import com.hearthgames.client.log.listener.LogListener;
 import com.hearthgames.client.ws.HearthGamesClient;
 import org.apache.commons.io.FileUtils;
@@ -53,19 +53,19 @@ public class LogManager {
                 byte[] data = FileUtils.readFileToByteArray(file);
                 GameData gameData = new GameData();
                 if (file.getName().startsWith("nonranked")) {
-                    logger.info("Found Non Ranked match for upload : " + file.getName());
+                    logger.info("Found Non Ranked game for upload : " + file.getName());
                     String[] gameInfo = file.getName().replace(".chl","").split("_");
                     gameData.setData(data);
                     gameData.setStartTime(Long.parseLong(gameInfo[1]));
                     gameData.setEndTime(Long.parseLong(gameInfo[2]));
 
                 } else if (file.getName().startsWith("ranked")) {
-                    logger.info("Found Ranked match for upload : " + file.getName());
+                    logger.info("Found Ranked game for upload : " + file.getName());
                     String[] gameInfo = file.getName().replace(".chl","").split("_");
                     gameData.setData(data);
                     gameData.setStartTime(Long.parseLong(gameInfo[1]));
                     gameData.setEndTime(Long.parseLong(gameInfo[2]));
-                    gameData.setRank(gameInfo[3]);
+                    gameData.setRank(Integer.parseInt(gameInfo[3]));
                 }
                 client.handleRetryGameRecorded(new RetryGameRecordedEvent(this, gameData, file));
             } catch (IOException e) {
