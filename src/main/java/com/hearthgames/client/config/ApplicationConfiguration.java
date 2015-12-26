@@ -33,12 +33,14 @@ public class ApplicationConfiguration {
 
     @Bean
     public File logFile() {
-        File logFile = null;
+        File logFile;
         if (properties.getOsName().toLowerCase().startsWith("windows")) {
             String root = properties.getUserHome().substring(0, properties.getUserHome().indexOf(File.separator));
             logFile = new File(root+"\\Program Files (x86)\\Hearthstone\\Hearthstone_Data\\output_log.txt");
         } else if (properties.getOsName().toLowerCase().startsWith("mac")) {
             logFile = new File(properties.getUserHome()+"/Library/Logs/Unity/Player.log");
+        } else { // assume Linux using Wine
+            logFile = new File(properties.getUserHome() + "/.wine/drive_c/Program Files (x86)/Hearthstone/Hearthstone_Data/output_log.txt");
         }
         logger.info("log: " + logFile);
         return logFile;
@@ -46,11 +48,13 @@ public class ApplicationConfiguration {
 
     @Bean
     public File logConfigFile() {
-        File logConfigFile = null;
-        if (properties.getOsName().toLowerCase().startsWith("windows")) {
+        File logConfigFile;
+        if (properties.getOsName().toLowerCase().contains("windows")) {
             logConfigFile = new File(properties.getUserHome() + "\\AppData\\Local\\Blizzard\\Hearthstone\\log.config");
-        } else if (properties.getOsName().toLowerCase().startsWith("mac")) {
+        } else if (properties.getOsName().toLowerCase().contains("mac")) {
             logConfigFile = new File(properties.getUserHome() + "/Library/Preferences/Blizzard/Hearthstone/log.config");
+        } else { // assume Linux using Wine
+            logConfigFile = new File(properties.getUserHome() + "/.wine/drive_c/users/" + System.getProperty("user.name") + "/Local Settings/Application Data/Blizzard/Hearthstone/log.config");
         }
         logger.info("log config: " + logConfigFile);
         return logConfigFile;
