@@ -45,11 +45,11 @@ public class LogListener extends TailerListenerAdapter {
             }
             filteredLine = assetFilter.filter(line);
             if (filteredLine != null) {
-                event = new LineReadEvent(this, filteredLine, false);
+                event = new LineReadEvent(this, filteredLine, true);
             }
             filteredLine = bobFilter.filter(line);
             if (filteredLine != null) {
-                event = new LineReadEvent(this, filteredLine, false);
+                event = new LineReadEvent(this, filteredLine, true);
             }
             if (event != null) {
                 gameRecorder.handleLine(event);
