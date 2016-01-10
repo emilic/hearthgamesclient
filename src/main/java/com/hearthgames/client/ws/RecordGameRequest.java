@@ -5,10 +5,19 @@ import java.io.Serializable;
 public class RecordGameRequest implements Serializable {
     private static final long serialVersionUID = 1;
 
+    private int version;
     private byte[] data;
     private Integer rank;
     private long startTime;
     private long endTime;
+
+    public int getVersion() {
+        return version;
+    }
+
+    public void setVersion(int version) {
+        this.version = version;
+    }
 
     public byte[] getData() {
         return data;

@@ -48,6 +48,7 @@ public class HearthGamesClient {
 
     private RecordGameRequest createRequestFromData(GameData data) {
         RecordGameRequest request = new RecordGameRequest();
+        request.setVersion(1);
         request.setData(data.getData());
         request.setRank(data.getRank());
         request.setStartTime(data.getStartTime());
@@ -59,8 +60,12 @@ public class HearthGamesClient {
         try {
             ResponseEntity<RecordGameResponse> response = postGameToServer(createRequestFromData(gameData));
             if (response.getStatusCode() == HttpStatus.OK) {
-                logger.info("Game recorded: " + response.getBody().getUrl());
-                deleteFile(file);
+                if (response.getBody().isUpgradeRequired()) {
+                    logger.info(response.getBody().getMsg());
+                } else {
+                    logger.info("Game recorded: " + response.getBody().getUrl());
+                    deleteFile(file);
+                }
             }
         } catch (RestClientException e) {
             if (e.getCause() instanceof ConnectException) {
@@ -76,7 +81,11 @@ public class HearthGamesClient {
         try {
             ResponseEntity<RecordGameResponse> response = postGameToServer(createRequestFromData(gameData));
             if (response.getStatusCode() == HttpStatus.OK) {
-                logger.info("Game recorded: " + response.getBody().getUrl());
+                if (response.getBody().isUpgradeRequired()) {
+                    logger.info(response.getBody().getMsg());
+                } else {
+                    logger.info("Game recorded: " + response.getBody().getUrl());
+                }
             }
         } catch (RestClientException e) {
             if (e.getCause() instanceof ConnectException) {
