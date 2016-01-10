@@ -9,7 +9,7 @@ public class BobFilter implements LogFilter {
     @Override
     public String filter(String line) {
         String filteredLine = null;
-        if (!StringUtils.isEmpty(line) && line.startsWith("[Bob] ---RegisterFriendChallenge---")) {
+        if (!StringUtils.isEmpty(line) && line.startsWith("[Bob] ---Register")) {
             filteredLine = line.replace("[Bob] ", "");
         }
         return filteredLine;
