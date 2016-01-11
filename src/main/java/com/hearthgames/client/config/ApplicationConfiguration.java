@@ -13,7 +13,9 @@ import com.hearthgames.client.ui.TextAreaOutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.*;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.web.client.RestTemplate;
 
@@ -85,9 +87,9 @@ public class ApplicationConfiguration {
         JTextArea consoleTextArea = new JTextArea(10, 60);
 
         JScrollPane scrollPane = new JScrollPane(consoleTextArea);
-        scrollPane.setBounds(0, 0, 710, 220);
+        scrollPane.setBounds(0, 0, 999, 220);
         frame.add(scrollPane);
-        frame.setSize(735, 220);
+        frame.setSize(1024, 220);
         frame.setResizable(true);
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);

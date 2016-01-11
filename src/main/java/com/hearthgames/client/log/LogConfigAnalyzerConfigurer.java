@@ -6,7 +6,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,7 +37,7 @@ public class LogConfigAnalyzerConfigurer {
         boolean ignoreLogger = false;
         for (String line: originalLines) {
             if (line.startsWith("[")) {
-                ignoreLogger = line.startsWith("[Power]") || line.startsWith("[Asset]") || line.startsWith("[Bob]");
+                ignoreLogger = line.startsWith("[Power]") || line.startsWith("[Asset]") || line.startsWith("[Bob]") || line.startsWith("[LoadingScreen]");
             }
             if (!ignoreLogger) {
                 newLines.add(line);
@@ -53,6 +54,11 @@ public class LogConfigAnalyzerConfigurer {
         newLines.add("ConsolePrinting=true");
         newLines.add("ScreenPrinting=false");
         newLines.add("[Bob]");
+        newLines.add("LogLevel=1");
+        newLines.add("FilePrinting=false");
+        newLines.add("ConsolePrinting=true");
+        newLines.add("ScreenPrinting=false");
+        newLines.add("[LoadingScreen]");
         newLines.add("LogLevel=1");
         newLines.add("FilePrinting=false");
         newLines.add("ConsolePrinting=true");

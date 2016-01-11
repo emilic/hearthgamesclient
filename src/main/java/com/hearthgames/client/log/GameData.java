@@ -1,11 +1,11 @@
-package com.hearthgames.client.game;
+package com.hearthgames.client.log;
 
 public class GameData {
 
     private byte[] data;
+    private int gameType;
     private long startTime;
     private long endTime;
-    private Integer rank;
 
     public byte[] getData() {
         return data;
@@ -13,6 +13,14 @@ public class GameData {
 
     public void setData(byte[] data) {
         this.data = data;
+    }
+
+    public int getGameType() {
+        return gameType;
+    }
+
+    public void setGameType(int gameType) {
+        this.gameType = gameType;
     }
 
     public long getStartTime() {
@@ -29,13 +37,5 @@ public class GameData {
 
     public void setEndTime(long endTime) {
         this.endTime = endTime;
-    }
-
-    public Integer getRank() {
-        return rank;
-    }
-
-    public void setRank(Integer rank) {
-        this.rank = rank;
     }
 }

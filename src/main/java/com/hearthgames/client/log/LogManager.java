@@ -1,8 +1,5 @@
 package com.hearthgames.client.log;
 
-import com.hearthgames.client.game.GameData;
-import com.hearthgames.client.game.event.RetryGameRecordedEvent;
-import com.hearthgames.client.log.listener.LogListener;
 import com.hearthgames.client.ws.HearthGamesClient;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.input.Tailer;
@@ -11,7 +8,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 import java.util.Collection;
 
 @Component
@@ -32,11 +30,14 @@ public class LogManager {
         this.client = client;
     }
 
-    public void start() throws InterruptedException, FileNotFoundException, UnsupportedEncodingException {
+    public void start() throws InterruptedException, IOException {
         uploadCachedLogs();
         if (!logFile.exists()) {
-            logger.error("Cannot find file : " + logFile.getName());
-            return;
+            boolean created = logFile.createNewFile();
+            if (!created) {
+                logger.error("Could not find log file, tried to create empty file : " + logFile.getName() + " but was unable.  Please start Hearthstone before this App, then restart this App.");
+                System.exit(-1);
+            }
         }
         Tailer tailer = new Tailer(logFile, logListener, 1000, true);
         Thread thread = new Thread(tailer);
@@ -52,26 +53,38 @@ public class LogManager {
             try {
                 byte[] data = FileUtils.readFileToByteArray(file);
                 GameData gameData = new GameData();
-                if (file.getName().startsWith("nonranked")) {
-                    logger.info("Found Non Ranked game for upload : " + file.getName());
+
+                if (file.getName().startsWith("game")) {
+                    logger.info("Found game for upload : " + file.getName());
                     String[] gameInfo = file.getName().replace(".chl","").split("_");
                     gameData.setData(data);
                     gameData.setStartTime(Long.parseLong(gameInfo[1]));
                     gameData.setEndTime(Long.parseLong(gameInfo[2]));
 
-                } else if (file.getName().startsWith("ranked")) {
-                    logger.info("Found Ranked game for upload : " + file.getName());
-                    String[] gameInfo = file.getName().replace(".chl","").split("_");
-                    gameData.setData(data);
-                    gameData.setStartTime(Long.parseLong(gameInfo[1]));
-                    gameData.setEndTime(Long.parseLong(gameInfo[2]));
-                    gameData.setRank(Integer.parseInt(gameInfo[3]));
+                    boolean recorded = client.recordGame(gameData);
+                    if (recorded) {
+                        deleteFile(file);
+                    }
                 }
-                client.handleRetryGameRecorded(new RetryGameRecordedEvent(this, gameData, file));
+
             } catch (IOException e) {
                 e.printStackTrace();
                 logger.error("Failed to read file : " + file.getName());
             }
+        }
+    }
+
+    private void deleteFile(File file) {
+        try {
+            logger.info("Attempting to delete temporary file: " + file.getAbsolutePath());
+            boolean deleted = file.delete();
+            if (deleted) {
+                logger.info("Deleted temporary file : " + file.getAbsolutePath());
+            } else {
+                logger.error("Failed to delete temporary file : " + file.getAbsolutePath());
+            }
+        } catch (Exception e) {
+            logger.error("Failed to delete temporary file : " + file.getAbsolutePath());
         }
     }
 }
