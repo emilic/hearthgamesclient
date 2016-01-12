@@ -8,7 +8,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.DeflaterOutputStream;
@@ -69,6 +71,7 @@ public class GameRecorder {
             gameData.setGameType(gameType.getType());
 
             if (!hasGameBeenRecorded(gameData) && isGameValid(currentGame.toString())) {
+                logger.info("Game Type = " + gameType.name());
                 logger.info("Attempting to upload recorded game to HearthGames.com");
                 recordedGames.add(gameData);
                 client.recordGame(gameData);
@@ -105,8 +108,6 @@ public class GameRecorder {
         }
     }
 
-    private Set<String> modes = new LinkedHashSet<>();
-
     private void detectGameMode(String line) {
         if (line.startsWith(BOB)) {
             if (line.contains(RANKED)) {
@@ -117,13 +118,10 @@ public class GameRecorder {
                 gameType = GameType.CASUAL;
             } else if (line.contains(FRIEND_CHALLENGE)) {
                 gameType = GameType.FRIENDLY_CHALLENGE;
-            } else if (line.contains(ADVENTURE_MODE)) {
-                gameType = GameType.ADVENTURE;
             }
         } else if (line.startsWith(LOADING_SCREEN)) {
             String mode = getMode(line);
             if (mode != null) {
-                modes.add(mode);
                 if (TAVERN_BRAWL.equals(mode)) {
                     gameType = GameType.TAVERN_BRAWL;
                 } else if (TOURNAMENT.equals(mode)) {
@@ -136,6 +134,8 @@ public class GameRecorder {
                     gameType = GameType.ARENA;
                 }
             }
+        } else if (line.contains(ADVENTURE_MODE)) {
+            gameType = GameType.ADVENTURE;
         }
     }
 
