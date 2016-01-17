@@ -11,6 +11,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * This class Analyzes the log.config file and adds the Loggers required keeping any existing Loggers configured intact.
+ */
 @Component
 public class LogConfigAnalyzerConfigurer {
 
@@ -33,36 +36,37 @@ public class LogConfigAnalyzerConfigurer {
     }
 
     private List<String> analyze(List<String> originalLines) {
-        List<String> newLines = new ArrayList<>();
+        List<String> newLogConfig = new ArrayList<>();
         boolean ignoreLogger = false;
         for (String line: originalLines) {
             if (line.startsWith("[")) {
-                ignoreLogger = line.startsWith("[Power]") || line.startsWith("[Asset]") || line.startsWith("[Bob]") || line.startsWith("[LoadingScreen]");
+                ignoreLogger = line.startsWith(GameLogger.Power.getName()) ||
+                        line.startsWith(GameLogger.Asset.getName()) ||
+                        line.startsWith(GameLogger.Bob.getName()) ||
+                        line.startsWith(GameLogger.LoadingScreen.getName()) ||
+                        line.startsWith(GameLogger.Achievements.getName()) ||
+                        line.startsWith(GameLogger.Arena.getName()) ||
+                        line.startsWith(GameLogger.Rachelle.getName());
             }
             if (!ignoreLogger) {
-                newLines.add(line);
+                newLogConfig.add(line);
             }
         }
-        newLines.add("[Power]");
-        newLines.add("LogLevel=1");
-        newLines.add("FilePrinting=false");
-        newLines.add("ConsolePrinting=true");
-        newLines.add("ScreenPrinting=false");
-        newLines.add("[Asset]");
-        newLines.add("LogLevel=1");
-        newLines.add("FilePrinting=false");
-        newLines.add("ConsolePrinting=true");
-        newLines.add("ScreenPrinting=false");
-        newLines.add("[Bob]");
-        newLines.add("LogLevel=1");
-        newLines.add("FilePrinting=false");
-        newLines.add("ConsolePrinting=true");
-        newLines.add("ScreenPrinting=false");
-        newLines.add("[LoadingScreen]");
-        newLines.add("LogLevel=1");
-        newLines.add("FilePrinting=false");
-        newLines.add("ConsolePrinting=true");
-        newLines.add("ScreenPrinting=false");
-        return newLines;
+        addLogger(GameLogger.Power.getName(), newLogConfig);
+        addLogger(GameLogger.Asset.getName(), newLogConfig);
+        addLogger(GameLogger.Bob.getName(), newLogConfig);
+        addLogger(GameLogger.LoadingScreen.getName(), newLogConfig);
+        addLogger(GameLogger.Achievements.getName(), newLogConfig);
+        addLogger(GameLogger.Arena.getName(), newLogConfig);
+        addLogger(GameLogger.Rachelle.getName(), newLogConfig);
+        return newLogConfig;
+    }
+
+    private void addLogger(String loggerName, List<String> newLogConfig) {
+        newLogConfig.add(loggerName);
+        newLogConfig.add("LogLevel=1");
+        newLogConfig.add("FilePrinting=false");
+        newLogConfig.add("ConsolePrinting=true");
+        newLogConfig.add("ScreenPrinting=false");
     }
 }

@@ -39,7 +39,7 @@ public class LogManager {
                 System.exit(-1);
             }
         }
-        Tailer tailer = new Tailer(logFile, logListener, 1000, true);
+        Tailer tailer = new Tailer(logFile, logListener, 1000);
         Thread thread = new Thread(tailer);
         thread.start();
     }

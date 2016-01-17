@@ -22,9 +22,6 @@ public class GameRecorder {
 
     private static final Pattern pattern = Pattern.compile("\\[LoadingScreen\\] LoadingScreen.OnSceneLoaded\\(\\) - prevMode=(.*) currMode=(.*)");
 
-    private static final String BOB = "[Bob]";
-    private static final String LOADING_SCREEN = "[LoadingScreen]";
-
     private static final String CREATE_GAME = "CREATE_GAME";
     private static final String GAME_STATE_COMPLETE = "TAG_CHANGE Entity=GameEntity tag=STATE value=COMPLETE";
     private static final String END_OF_LOGS_FOR_GAME_MARKER = "---RegisterFriendChallenge---";
@@ -49,8 +46,6 @@ public class GameRecorder {
     private long endTime;
     private GameType gameType = GameType.UNKNOWN;
 
-    private List<GameData> recordedGames = new ArrayList<>();
-
     public void handleLine(String line) {
 
         detectGameMode(line);
@@ -71,7 +66,7 @@ public class GameRecorder {
             gameData.setGameType(gameType.getType());
 
             if (!hasGameBeenRecorded(gameData) && isGameValid(currentGame.toString())) {
-                logger.info("Game Type = " + gameType.name());
+                logger.info("Detected Game Type = " + gameType.name());
                 logger.info("Attempting to upload recorded game to HearthGames.com");
                 recordedGames.add(gameData);
                 client.recordGame(gameData);
@@ -109,7 +104,7 @@ public class GameRecorder {
     }
 
     private void detectGameMode(String line) {
-        if (line.startsWith(BOB)) {
+        if (line.startsWith(GameLogger.Bob.getName())) {
             if (line.contains(RANKED)) {
                 gameType = GameType.RANKED;
             } else if (line.contains(ARENA_GAME)) {
@@ -119,7 +114,7 @@ public class GameRecorder {
             } else if (line.contains(FRIEND_CHALLENGE)) {
                 gameType = GameType.FRIENDLY_CHALLENGE;
             }
-        } else if (line.startsWith(LOADING_SCREEN)) {
+        } else if (line.startsWith(GameLogger.LoadingScreen.getName())) {
             String mode = getMode(line);
             if (mode != null) {
                 if (TAVERN_BRAWL.equals(mode)) {
@@ -172,8 +167,11 @@ public class GameRecorder {
         return game.contains(CREATE_GAME) && game.contains(GAME_STATE_COMPLETE);
     }
 
+    private List<GameData> recordedGames = new ArrayList<>();
+
     // This method is needed because of a bug in Tailer that results in the log being re-read from the beginning when
-    // hearthstone is exited out. So we have to unfortunately compare previous games data.
+    // Hearthstone is exited out. So we have to unfortunately compare previous games data.
+    // See https://issues.apache.org/jira/browse/IO-279
     private boolean hasGameBeenRecorded(GameData data) {
         for (GameData md : recordedGames) {
             if (Arrays.equals(data.getData(), md.getData())) {
