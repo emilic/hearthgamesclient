@@ -62,7 +62,7 @@ public class HearthGamesClient {
 
     private RecordGameRequest createRequestFromData(GameData data) {
         RecordGameRequest request = new RecordGameRequest();
-        request.setVersion(2);
+        request.setVersion(3);
         request.setData(data.getData());
         request.setStartTime(data.getStartTime());
         request.setEndTime(data.getEndTime());
