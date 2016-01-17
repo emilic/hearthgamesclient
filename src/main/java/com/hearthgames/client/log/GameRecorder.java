@@ -1,6 +1,5 @@
 package com.hearthgames.client.log;
 
-import com.hearthgames.client.ws.HearthGamesClient;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,7 +37,7 @@ public class GameRecorder {
     private static final String DRAFT = "DRAFT";
 
     @Autowired
-    private HearthGamesClient client;
+    private GameUploader gameUploader;
 
     private StringBuilder currentGame = new StringBuilder();
     private boolean gameComplete;
@@ -69,7 +68,7 @@ public class GameRecorder {
                 logger.info("Detected Game Type = " + gameType.name());
                 logger.info("Attempting to upload recorded game to HearthGames.com");
                 recordedGames.add(gameData);
-                client.recordGame(gameData);
+                gameUploader.uploadGame(gameData);
             }
 
             // Reset the game

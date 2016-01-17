@@ -1,6 +1,5 @@
 package com.hearthgames.client.log;
 
-import com.hearthgames.client.ws.HearthGamesClient;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.input.Tailer;
 import org.slf4j.Logger;
@@ -19,12 +18,12 @@ public class LogManager {
 
     private LogListener logListener;
     private File logFile;
-    private HearthGamesClient client;
+    private GameUploader client;
 
     @Autowired
     public LogManager(LogListener logListener,
                       File logFile,
-                      HearthGamesClient client) {
+                      GameUploader client) {
         this.logListener = logListener;
         this.logFile = logFile;
         this.client = client;
@@ -61,7 +60,7 @@ public class LogManager {
                     gameData.setStartTime(Long.parseLong(gameInfo[1]));
                     gameData.setEndTime(Long.parseLong(gameInfo[2]));
 
-                    boolean recorded = client.recordGame(gameData);
+                    boolean recorded = client.uploadGame(gameData);
                     if (recorded) {
                         deleteFile(file);
                     }

@@ -1,8 +1,6 @@
-package com.hearthgames.client.ws;
+package com.hearthgames.client.log;
 
 import com.hearthgames.client.config.ApplicationProperties;
-import com.hearthgames.client.log.GameData;
-import com.hearthgames.client.log.GameRecorder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,24 +16,24 @@ import java.io.Serializable;
 import java.net.ConnectException;
 
 @Component
-public class HearthGamesClient {
+public class GameUploader {
 
-    private static final Logger logger = LoggerFactory.getLogger(HearthGamesClient.class);
+    private static final Logger logger = LoggerFactory.getLogger(GameUploader.class);
 
     private RestTemplate restTemplate;
     private ApplicationProperties properties;
     private GameRecorder gameRecorder;
 
     @Autowired
-    public HearthGamesClient(RestTemplate restTemplate,
-                             ApplicationProperties properties,
-                             GameRecorder gameRecorder) {
+    public GameUploader(RestTemplate restTemplate,
+                        ApplicationProperties properties,
+                        GameRecorder gameRecorder) {
         this.restTemplate = restTemplate;
         this.properties = properties;
         this.gameRecorder = gameRecorder;
     }
 
-    public boolean recordGame(GameData gameData) {
+    public boolean uploadGame(GameData gameData) {
         try {
             ResponseEntity<RecordGameResponse> response = postGameToServer(createRequestFromData(gameData));
             if (response.getStatusCode() == HttpStatus.OK) {
