@@ -6,8 +6,8 @@ import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.OutputStreamAppender;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.hearthgames.client.log.GameLogManager;
 import com.hearthgames.client.log.LogConfigAnalyzerConfigurer;
-import com.hearthgames.client.log.LogManager;
 import com.hearthgames.client.ui.SystemTraySupportedJFrame;
 import com.hearthgames.client.ui.TextAreaOutputStream;
 import org.slf4j.Logger;
@@ -79,7 +79,7 @@ public class ApplicationConfiguration {
     private LogConfigAnalyzerConfigurer logConfigAnalyzerConfigurer;
 
     @Autowired
-    private LogManager logManager;
+    private GameLogManager gameLogManager;
 
     @Bean
     public SystemTraySupportedJFrame frame() throws IOException, InterruptedException {
@@ -98,7 +98,7 @@ public class ApplicationConfiguration {
         initLogger(consoleTextArea);
 
         logConfigAnalyzerConfigurer.configure();
-        logManager.start();
+        gameLogManager.start();
 
         return frame;
     }

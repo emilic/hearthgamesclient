@@ -1,5 +1,8 @@
 package com.hearthgames.client.log;
 
+/**
+ * Stores game data such as the log file (compressed), game type (ARENA, CASUAL, etc...) and the start and end time of the game.
+ */
 public class GameData {
 
     private byte[] data;

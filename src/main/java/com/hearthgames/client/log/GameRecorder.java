@@ -1,6 +1,8 @@
 package com.hearthgames.client.log;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.input.TailerListenerAdapter;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,12 +16,16 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.DeflaterOutputStream;
 
+/**
+ * The Game Recorder is responsible for handling each line read from the Hearthstone log file.  The logic to determine
+ * the game type, when the game starts and ends is all here.
+ */
 @Component
-public class GameRecorder {
+public class GameRecorder extends TailerListenerAdapter {
 
     private static final Logger logger = LoggerFactory.getLogger(GameRecorder.class);
 
-    private static final Pattern pattern = Pattern.compile("\\[LoadingScreen\\] LoadingScreen.OnSceneLoaded\\(\\) - prevMode=(.*) currMode=(.*)");
+    private static final Pattern gameModePattern = Pattern.compile("\\[LoadingScreen\\] LoadingScreen.OnSceneLoaded\\(\\) - prevMode=(.*) currMode=(.*)");
 
     private static final String CREATE_GAME = "CREATE_GAME";
     private static final String GAME_STATE_COMPLETE = "TAG_CHANGE Entity=GameEntity tag=STATE value=COMPLETE";
@@ -45,7 +51,10 @@ public class GameRecorder {
     private long endTime;
     private GameType gameType = GameType.UNKNOWN;
 
-    public void handleLine(String line) {
+    @Override
+    public void handle(String line) {
+
+        if (!GameLogger.isLineValid(line)) return;
 
         detectGameMode(line);
 
@@ -58,11 +67,7 @@ public class GameRecorder {
             endTime = System.currentTimeMillis();
         } else if (currentGame != null && gameComplete && line.contains(END_OF_LOGS_FOR_GAME_MARKER)) {
             currentGame.append(line).append("\n");
-            GameData gameData = new GameData();
-            gameData.setData(compress(currentGame.toString()));
-            gameData.setStartTime(startTime);
-            gameData.setEndTime(endTime);
-            gameData.setGameType(gameType.getType());
+            GameData gameData = createGameData(currentGame.toString(), startTime, endTime, gameType);
 
             if (!hasGameBeenRecorded(gameData) && isGameValid(currentGame.toString())) {
                 logger.info("Detected Game Type = " + gameType.name());
@@ -70,12 +75,7 @@ public class GameRecorder {
                 recordedGames.add(gameData);
                 gameUploader.uploadGame(gameData);
             }
-
-            // Reset the game
-            currentGame = new StringBuilder();
-            gameComplete = false;
-            startTime = 0;
-            endTime = 0;
+            resetGame();
 
         } else if (currentGame != null) {
             currentGame.append(line).append("\n");
@@ -100,6 +100,22 @@ public class GameRecorder {
         } else {
             logger.info("File already exists. Skipping.");
         }
+    }
+
+    private GameData createGameData(String currentGame, long startTime, long endTime, GameType gameType) {
+        GameData gameData = new GameData();
+        gameData.setData(compress(currentGame));
+        gameData.setStartTime(startTime);
+        gameData.setEndTime(endTime);
+        gameData.setGameType(gameType.getType());
+        return gameData;
+    }
+
+    private void resetGame() {
+        currentGame = new StringBuilder();
+        gameComplete = false;
+        startTime = 0;
+        endTime = 0;
     }
 
     private void detectGameMode(String line) {
@@ -135,7 +151,7 @@ public class GameRecorder {
 
     private String getMode(String line) {
         String mode = null;
-        Matcher matcher = pattern.matcher(line);
+        Matcher matcher = gameModePattern.matcher(line);
         if (matcher.find()) {
             mode = matcher.group(2);
         }
@@ -188,5 +204,9 @@ public class GameRecorder {
             throw new AssertionError(e);
         }
         return baos.toByteArray();
+    }
+
+    public void handle(Exception e) {
+        logger.error(ExceptionUtils.getStackTrace(e));
     }
 }

@@ -15,6 +15,9 @@ import org.springframework.web.client.RestTemplate;
 import java.io.Serializable;
 import java.net.ConnectException;
 
+/**
+ * The Game Uploader handles communication between the server and client, sending completed game to be recorded on the server.
+ */
 @Component
 public class GameUploader {
 

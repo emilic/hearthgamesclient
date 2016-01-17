@@ -12,19 +12,19 @@ import java.io.IOException;
 import java.util.Collection;
 
 @Component
-public class LogManager {
+public class GameLogManager {
 
-    private static final Logger logger = LoggerFactory.getLogger(LogManager.class);
+    private static final Logger logger = LoggerFactory.getLogger(GameLogManager.class);
 
-    private LogListener logListener;
+    private GameRecorder gameRecorder;
     private File logFile;
     private GameUploader client;
 
     @Autowired
-    public LogManager(LogListener logListener,
-                      File logFile,
-                      GameUploader client) {
-        this.logListener = logListener;
+    public GameLogManager(GameRecorder gameRecorder,
+                          File logFile,
+                          GameUploader client) {
+        this.gameRecorder = gameRecorder;
         this.logFile = logFile;
         this.client = client;
     }
@@ -38,7 +38,7 @@ public class LogManager {
                 System.exit(-1);
             }
         }
-        Tailer tailer = new Tailer(logFile, logListener, 1000);
+        Tailer tailer = new Tailer(logFile, gameRecorder, 1000);
         Thread thread = new Thread(tailer);
         thread.start();
     }
