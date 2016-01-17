@@ -44,7 +44,7 @@ public class GameLogManager {
                 System.exit(-1);
             }
         }
-        Tailer tailer = new Tailer(logFile, gameRecorder, 1000);
+        Tailer tailer = new Tailer(logFile, gameRecorder, 1000, true);
         Thread thread = new Thread(tailer);
         thread.start();
     }

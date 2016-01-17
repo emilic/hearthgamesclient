@@ -72,7 +72,6 @@ public class GameRecorder extends TailerListenerAdapter {
 
             if (!hasGameBeenRecorded(gameData) && isGameValid(currentGame.toString())) {
                 logger.info("Detected Game Type = " + gameType.name());
-                logger.info("Attempting to upload recorded game to HearthGames.com");
                 recordedGames.add(gameData);
                 gameUploader.uploadGame(gameData);
             }
