@@ -30,7 +30,7 @@ public class GameRecorder extends TailerListenerAdapter {
 
     private static final String CREATE_GAME = "CREATE_GAME";
     private static final String GAME_STATE_COMPLETE = "TAG_CHANGE Entity=GameEntity tag=STATE value=COMPLETE";
-    private static final String END_OF_LOGS_FOR_GAME_MARKER = "---RegisterFriendChallenge---";
+    private static final String END_OF_LOGS_FOR_GAME_MARKER = "---RegisterScreenBox---";
 
     private static final String RANKED = "unloading name=Medal_Ranked";
     private static final String ARENA_GAME = "---RegisterScreenForge---";
@@ -99,10 +99,13 @@ public class GameRecorder extends TailerListenerAdapter {
     }
 
     private void detectGameMode(String line) {
-        if (line.startsWith(GameLogger.Bob.getName())) {
-            if (line.contains(RANKED)) {
+        if (line.startsWith(GameLogger.Asset.getName())) {
+            // check if this happens only once the game completes
+            if (line.contains(RANKED) && gameComplete) {
                 gameType = GameType.RANKED;
-            } else if (line.contains(ARENA_GAME)) {
+            }
+        } else if (line.startsWith(GameLogger.Bob.getName())) {
+            if (line.contains(ARENA_GAME)) {
                 gameType = GameType.ARENA;
             } else if (line.contains(PLAY_MODE)) {
                 gameType = GameType.CASUAL;
