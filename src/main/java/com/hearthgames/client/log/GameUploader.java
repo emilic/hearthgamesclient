@@ -1,6 +1,7 @@
 package com.hearthgames.client.log;
 
 import com.hearthgames.client.config.ApplicationProperties;
+import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,11 +13,12 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
-import java.io.Serializable;
+import java.io.*;
 import java.net.ConnectException;
 
 /**
  * The Game Uploader handles communication between the server and client, sending completed game to be recorded on the server.
+ * If a game fails to record it will save the game to a temporary file in the users temp directory.
  */
 @Component
 public class GameUploader {
@@ -25,15 +27,12 @@ public class GameUploader {
 
     private RestTemplate restTemplate;
     private ApplicationProperties properties;
-    private GameRecorder gameRecorder;
 
     @Autowired
     public GameUploader(RestTemplate restTemplate,
-                        ApplicationProperties properties,
-                        GameRecorder gameRecorder) {
+                        ApplicationProperties properties) {
         this.restTemplate = restTemplate;
         this.properties = properties;
-        this.gameRecorder = gameRecorder;
     }
 
     public boolean uploadGame(GameData gameData) {
@@ -52,13 +51,33 @@ public class GameUploader {
                 logger.info("Not able to save game to HearthGames.com at this time because the server is offline.");
                 logger.info(e.getMessage());
                 logger.info("Attempting to save game to local cache for later upload, on restart of the client.");
-                gameRecorder.saveGameToFile(gameData);
+                saveGameToFile(gameData);
             } else {
                 logger.info("Server returned error and will not process game. If a valid game was uploaded it will be queued for analysis and reprocessing on the server.");
             }
             logger.info(e.getMessage());
         }
         return false;
+    }
+
+    private void saveGameToFile(GameData gameData) {
+        String fileName = System.getProperty("java.io.tmpdir");
+        fileName += "game_"+gameData.getStartTime()+"_"+gameData.getEndTime()+".chl";
+
+        File file = new File(fileName);
+        if (!file.exists()) { // don't need to save the game to file if it's already there
+            logger.info("Saving game to : " + fileName);
+            try {
+                FileUtils.writeByteArrayToFile(file, gameData.getData());
+            } catch (IOException e) {
+                logger.error("Error saving game to : " + fileName);
+                StringWriter sw = new StringWriter();
+                e.printStackTrace(new PrintWriter(sw));
+                logger.error(sw.toString());
+            }
+        } else {
+            logger.info("File already exists. Skipping.");
+        }
     }
 
     private RecordGameRequest createRequestFromData(GameData data) {

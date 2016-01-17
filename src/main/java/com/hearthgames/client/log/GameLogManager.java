@@ -11,6 +11,12 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 
+/**
+ * The Game Log Manager orchestrates the reading and recording of log files.
+ *
+ * At application start up it looks for log files that have been saved locally (logs that failed to upload because the server was offline).
+ *
+ */
 @Component
 public class GameLogManager {
 
@@ -30,7 +36,7 @@ public class GameLogManager {
     }
 
     public void start() throws InterruptedException, IOException {
-        uploadCachedLogs();
+        uploadLocallySavedLogs();
         if (!logFile.exists()) {
             boolean created = logFile.createNewFile();
             if (!created) {
@@ -43,7 +49,7 @@ public class GameLogManager {
         thread.start();
     }
 
-    private void uploadCachedLogs() {
+    private void uploadLocallySavedLogs() {
         Collection<File> files = FileUtils.listFiles(new File(System.getProperty("java.io.tmpdir")), new String[]{"chl"}, false);
         if (files.size() > 0) {
             logger.info("Found " + files.size() + " recorded game files that haven't been uploaded.");

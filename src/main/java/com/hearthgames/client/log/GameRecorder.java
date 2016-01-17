@@ -1,6 +1,5 @@
 package com.hearthgames.client.log;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.input.TailerListenerAdapter;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
@@ -8,7 +7,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -79,26 +80,6 @@ public class GameRecorder extends TailerListenerAdapter {
 
         } else if (currentGame != null) {
             currentGame.append(line).append("\n");
-        }
-    }
-
-    public void saveGameToFile(GameData gameData) {
-        String fileName = System.getProperty("java.io.tmpdir");
-        fileName += "game_"+startTime+"_"+endTime+".chl";
-
-        File file = new File(fileName);
-        if (!file.exists()) { // don't need to save the game to file if it's already there
-            logger.info("Saving game to : " + fileName);
-            try {
-                FileUtils.writeByteArrayToFile(file, gameData.getData());
-            } catch (IOException e) {
-                logger.error("Error saving game to : " + fileName);
-                StringWriter sw = new StringWriter();
-                e.printStackTrace(new PrintWriter(sw));
-                logger.error(sw.toString());
-            }
-        } else {
-            logger.info("File already exists. Skipping.");
         }
     }
 
