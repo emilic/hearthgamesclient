@@ -82,7 +82,7 @@ public class GameUploader {
 
     private RecordGameRequest createRequestFromData(GameData data) {
         RecordGameRequest request = new RecordGameRequest();
-        request.setVersion(3);
+        request.setVersion(4);
         request.setData(data.getData());
         request.setStartTime(data.getStartTime());
         request.setEndTime(data.getEndTime());
