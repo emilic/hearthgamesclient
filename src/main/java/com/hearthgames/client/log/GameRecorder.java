@@ -30,7 +30,8 @@ public class GameRecorder extends TailerListenerAdapter {
 
     private static final String CREATE_GAME = "CREATE_GAME";
     private static final String GAME_STATE_COMPLETE = "TAG_CHANGE Entity=GameEntity tag=STATE value=COMPLETE";
-    private static final String END_OF_LOGS_FOR_GAME_MARKER = "---RegisterScreenBox---";
+    private static final String END_OF_GAME_MODE_DETECTION = "---RegisterScreenBox---";
+    private static final String END_OF_GAME = "---RegisterFriendChallenge---";
 
     private static final String RANKED = "unloading name=Medal_Ranked";
     private static final String ARENA_GAME = "---RegisterScreenForge---";
@@ -48,6 +49,7 @@ public class GameRecorder extends TailerListenerAdapter {
 
     private StringBuilder currentGame = new StringBuilder();
     private boolean gameComplete;
+    private boolean gameModeDetectionComplete;
     private long startTime;
     private long endTime;
     private GameType gameType = GameType.UNKNOWN;
@@ -57,7 +59,9 @@ public class GameRecorder extends TailerListenerAdapter {
 
         if (!GameLogger.isLineValid(line)) return;
 
-        detectGameMode(line);
+        if (!gameModeDetectionComplete) {
+            detectGameMode(line);
+        }
 
         if (line.contains(CREATE_GAME)) {
             startTime = System.currentTimeMillis();
@@ -66,7 +70,9 @@ public class GameRecorder extends TailerListenerAdapter {
             currentGame.append(line).append("\n");
             gameComplete = true;
             endTime = System.currentTimeMillis();
-        } else if (currentGame != null && gameComplete && line.contains(END_OF_LOGS_FOR_GAME_MARKER)) {
+        } else if (line.contains(END_OF_GAME_MODE_DETECTION)) {
+            gameModeDetectionComplete = true;
+        } else if (currentGame != null && gameComplete && line.contains(END_OF_GAME)) {
             currentGame.append(line).append("\n");
             GameData gameData = createGameData(currentGame.toString(), startTime, endTime, gameType);
 
@@ -94,6 +100,7 @@ public class GameRecorder extends TailerListenerAdapter {
     private void resetGame() {
         currentGame = new StringBuilder();
         gameComplete = false;
+        gameModeDetectionComplete = false;
         startTime = 0;
         endTime = 0;
     }
