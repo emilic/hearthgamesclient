@@ -17,20 +17,18 @@ import org.apache.commons.lang3.StringUtils;
  */
 public enum GameLogger {
 
-    Power("[Power]", new String[]{"[Power] GameState.DebugPrintPower() - "}),
-    Asset("[Asset]", new String[]{"[Asset] CachedAsset.UnloadAssetObject() - "}),
-    Bob("[Bob]", new String[]{"[Bob] ---Register"}),
-    LoadingScreen("[LoadingScreen]", new String[]{"[LoadingScreen] LoadingScreen.OnSceneLoaded() - prevMode="}),
-    Achievements("[Achievements]", new String[]{"[Achievements]"}),
-    Arena("[Arena]", new String[]{"[Arena]"}),
-    Rachelle("[Rachelle]", new String[]{"[Rachelle]"});
+    Power("[Power]"),
+    Asset("[Asset]"),
+    Bob("[Bob]"),
+    LoadingScreen("[LoadingScreen]"),
+    Achievements("[Achievements]"),
+    Arena("[Arena]"),
+    Rachelle("[Rachelle]");
 
     private String name;
-    private String[] filters;
 
-    GameLogger(String name, String[] filters) {
+    GameLogger(String name) {
         this.name = name;
-        this.filters = filters;
     }
 
     public String getName() {
@@ -48,11 +46,6 @@ public enum GameLogger {
     }
 
     private static boolean matchesLogger(GameLogger gameLogger, String line) {
-        if (line.contains(gameLogger.name())) {
-            for (String filter: gameLogger.filters) {
-                if (line.contains(filter)) return true;
-            }
-        }
-        return false;
+        return line.contains(gameLogger.name());
     }
 }
